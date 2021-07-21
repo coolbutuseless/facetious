@@ -1,15 +1,16 @@
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Facet Grid with blanks where no information avail
+#' Facet in a grid layout, using  blanks where no information avail
 #'
 #' @param rows,cols,scales,space,shrink,labeller,as.table,switch,margins,facets
 #'        see documentation for \code{ggplot2::facet_grid}
 #' @param drop Default: FALSE, all factor levels will be shown, regardless of
 #'        whether or not they appear in the data.  This differs from
 #'        \code{ggplot2::facet_grid()} which defaults to TRUE
-#' @param blank Default TRUE.  Facets which contain no data to be plotted are
-#'        shown as completely blank spaces rather than a plot with a panel
-#'        but no geometry.  This argument only has an effect if \code{drop=FALSE}
+#' @param blank Default \code{grid::nullGrob()}.  The \code{grob} (i.e.
+#'        graphics object) to
+#'        insert in facet locations corresponding to empty factors.
+#'        This argument only has an effect if \code{drop=FALSE}
 #'
 #' @import ggplot2
 #' @export
@@ -18,7 +19,7 @@ facet_grid_blank <- function(rows = NULL, cols = NULL, scales = "fixed",
                              space = "fixed", shrink = TRUE,
                              labeller = "label_value", as.table = TRUE,
                              switch = NULL, drop = FALSE, margins = FALSE,
-                             facets = NULL, blank = TRUE) {
+                             facets = NULL, blank = grid::nullGrob()) {
   facet <- ggplot2::facet_grid(
     rows     = rows,
     cols     = cols,
@@ -33,13 +34,26 @@ facet_grid_blank <- function(rows = NULL, cols = NULL, scales = "fixed",
     facets   = facets
   )
 
+  is_grob <- function(x) { inherits(x, 'grob')}
+
+  if (is_grob(blank)) {
+    # all good
+  } else if (is.list(blank)) {
+    stopifnot(
+      all(vapply(blank, is_grob, logical(1)))
+    )
+  } else {
+    warning("'blank' must be a grob or list of grobs")
+    blank <- grid::nullGrob()
+  }
+
   ggplot2::ggproto(
     NULL,
     FacetGridBlank,
     shrink = shrink,
     params = c(
       facet$params,
-      list(blank = isTRUE(blank))
+      list(blank = blank)
     )
   )
 }
@@ -67,13 +81,12 @@ FacetGridBlank <- ggplot2::ggproto(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Work out which ROW,COL (and hence which panel) are blank
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (isTRUE(params$blank)) {
-      empty_idx    <- which(table(data[[1]]$PANEL) == 0) # when is PANEL count zero in the data?
-      n_row        <- max(layout$ROW)
-      n_col        <- max(layout$COL)
-      tmp_df       <- layout[layout$PANEL %in% empty_idx, c('ROW', 'COL')]
-      empty_panels <- with(tmp_df, (COL - 1) * n_row + ROW)
-    }
+    empty_idx    <- which(table(data[[1]]$PANEL) == 0) # when is PANEL count zero in the data?
+    n_row        <- max(layout$ROW)
+    n_col        <- max(layout$COL)
+    tmp_df       <- layout[layout$PANEL %in% empty_idx, c('ROW', 'COL')]
+    empty_panels <- with(tmp_df, (COL - 1) * n_row + ROW)
+
 
     cols <- which(layout$ROW == 1)
     rows <- which(layout$COL == 1)
@@ -138,9 +151,18 @@ FacetGridBlank <- ggplot2::ggproto(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Zero out the empty panels
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (isTRUE(params$blank)) {
+    if (inherits(params$blank, 'grob')) {
       for(idx in empty_panels) {
-        panel_table$grobs[[idx]] <- zeroGrob()
+        panel_table$grobs[[idx]] <- params$blank
+      }
+    } else {
+      # list of grobs
+      stopifnot(is.list(params$blank))
+      blank_idx <- 0L
+      for(idx in empty_panels) {
+        blank_idx <- blank_idx + 1L
+        panel_table$grobs[[idx]] <- params$blank[[blank_idx]]
+        blank_idx <- blank_idx %% length(params$blank)
       }
     }
 

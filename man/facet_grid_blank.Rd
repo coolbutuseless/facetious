@@ -2,7 +2,7 @@
 % Please edit documentation in R/facet-grid-blank.R
 \name{facet_grid_blank}
 \alias{facet_grid_blank}
-\title{Facet Grid with blanks where no information avail}
+\title{Facet in a grid layout, using  blanks where no information avail}
 \usage{
 facet_grid_blank(
   rows = NULL,
@@ -16,7 +16,7 @@ facet_grid_blank(
   drop = FALSE,
   margins = FALSE,
   facets = NULL,
-  blank = TRUE
+  blank = grid::nullGrob()
 )
 }
 \arguments{
@@ -26,10 +26,11 @@ facet_grid_blank(
 whether or not they appear in the data.  This differs from
 \code{ggplot2::facet_grid()} which defaults to TRUE}
 
-\item{blank}{Default TRUE.  Facets which contain no data to be plotted are
-shown as completely blank spaces rather than a plot with a panel
-but no geometry.  This argument only has an effect if \code{drop=FALSE}}
+\item{blank}{Default \code{grid::nullGrob()}.  The \code{grob} (i.e.
+graphics object) to
+insert in facet locations corresponding to empty factors.
+This argument only has an effect if \code{drop=FALSE}}
 }
 \description{
-Facet Grid with blanks where no information avail
+Facet in a grid layout, using  blanks where no information avail
 }

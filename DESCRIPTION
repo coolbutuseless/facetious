@@ -1,7 +1,7 @@
 Package: facetious
 Type: Package
 Title: Alternate Facets for ggplot2 
-Version: 0.1.0
+Version: 0.1.1
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
 Description: Alternate facetting for ggplot2.

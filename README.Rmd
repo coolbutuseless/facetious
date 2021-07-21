@@ -49,6 +49,13 @@ remotes::install_github('coolbutuseless/facetious')
 
 ## `facet_wrap_strict`
 
+In `ggplot2::facet_wrap()` (regardless of the `nrow` and `ncol` specified by the user),
+rows and columns of empty facets are removed.
+
+This behaviour of `ggplot2` can make it difficult to size and align plots in multiple plots.
+
+In contrast, `facetious::facet_wrap_strict()` will strictly adhere to the `nrow`, `ncol`
+specified by the user, and retain blank rows/cols of facets.
 
 ```{r}
 library(ggplot2)
@@ -80,6 +87,18 @@ ggplot_facet_wrap + facetious_facet_wrap_strict
 
 ## `facet_grid_blank`
 
+By default when a particular factor level is empty, `ggplot2` includes an empty
+plot.
+
+`facetious::facet_grid_blank()` goes a step further and (by default) makes the
+empty facet entirely *blank*.
+
+That is, empty factor levels are represented as a `grid::nullGrob()`, but it is
+possible to specify another grob, or list of grobs to fill the empty facets.
+
+v0.1.1 of `facetious` borrows an idea from the really great hack provided in 
+[ggbillboard](https://github.com/nacnudus/ggbillboard) by [Duncan Garmonsway](https://twitter.com/nacnudus) - i.e. 
+don't just put empty grobs into empty facets, put some advertising in there! 
 
 ```{r}
 library(dplyr)
@@ -122,11 +141,47 @@ facetious_facet_grid_blank <- ggplot(plot_df) +
 ggplot_facet_grid + facetious_facet_grid_blank
 ```
 
+# Using alternate globs for blank facets. Example 1 - single grob
+
+
+```{r}
+grob_for_blank <- grid::textGrob("No data available")
+
+ ggplot(plot_df) +
+  geom_point(aes(mpg, wt)) +
+  facet_grid_blank(rows = vars(cyl), cols = vars(am), drop = FALSE, 
+                   labeller = label_both, blank = grob_for_blank) +
+  labs(title = "facetious::facet_grid_blank()")
+
+```
+
+
+# Using alternate globs for blank facets. Example 2 - multiple grobs
+
+```{r fig.height = 8}
+grobs_for_blank <- list(
+  grid::rasterGrob(jpeg::readJPEG("man/figures/distracted.jpg")),
+  grid::rasterGrob(jpeg::readJPEG("man/figures/run.jpg"))
+)
+
+ ggplot(plot_df) +
+  geom_point(aes(mpg, wt)) +
+  facet_grid_blank(rows = vars(cyl), cols = vars(am), drop = FALSE, 
+                   labeller = label_both, blank = grobs_for_blank) +
+  labs(title = "facetious::facet_grid_blank()")
+
+```
+
 
 ## Related Software
 
 * [ggplot2](https://cran.r-project.org/package=ggplot2)
-* [ggforce](https://cran.r-project.org/package=ggforce)
+* [ggforce](https://cran.r-project.org/package=ggforce) a great package with alternate facets and
+  tools for ggplot2
+* [ggbillboard](https://github.com/nacnudus/ggbillboard) a package for replacing
+  blank facets with other grobs.  This was so cool that I've incorporated the 
+  idea into `facetious` as part of the facet process, rather than as a post-processing
+  step.
 
 ## Acknowledgements
 

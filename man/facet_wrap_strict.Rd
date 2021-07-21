@@ -2,7 +2,7 @@
 % Please edit documentation in R/facet-wrap-strict.R
 \name{facet_wrap_strict}
 \alias{facet_wrap_strict}
-\title{Facet wrap strict}
+\title{Facet a plot while strictly adhering to the user-specified \code{nrow}, \code{ncol} values}
 \usage{
 facet_wrap_strict(
   facets,
@@ -19,11 +19,18 @@ facet_wrap_strict(
 )
 }
 \arguments{
-\item{facets, nrow, ncol, scales, shrink, labeller, as.table, switch, drop, dir, strip.position}{see ggplot2 docs}
+\item{facets, scales, shrink, labeller, as.table, switch, drop, dir, strip.position}{see documnetation for \code{ggplot2::facet_wrap()}}
+
+\item{nrow, ncol}{user specified number of rows and columns in output.  If
+either of these values are null, then this function is identical to
+\code{ggplot2::facet_wrap()}.}
 }
 \value{
 FacetWrap oject
 }
 \description{
-Facet wrap strict
+This facet function keeps rows and columns to satisfy the requirments of the
+user even though those rows and cols might only consisst of empty plots.   This is
+different from \code{ggplot2::facet_wrap()} which will always drop empty rows
+or columns.
 }

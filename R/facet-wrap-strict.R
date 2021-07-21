@@ -235,10 +235,18 @@ FacetWrapStrict <- ggplot2::ggproto(
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Facet wrap strict
+#' Facet a plot while strictly adhering to the user-specified \code{nrow}, \code{ncol} values
 #'
-#' @param facets,nrow,ncol,scales,shrink,labeller,as.table,switch,drop,dir,strip.position
-#'        see ggplot2 docs
+#' This facet function keeps rows and columns to satisfy the requirments of the
+#' user even though those rows and cols might only consisst of empty plots.   This is
+#' different from \code{ggplot2::facet_wrap()} which will always drop empty rows
+#' or columns.
+#'
+#' @param facets,scales,shrink,labeller,as.table,switch,drop,dir,strip.position
+#'        see documnetation for \code{ggplot2::facet_wrap()}
+#' @param nrow,ncol user specified number of rows and columns in output.  If
+#'        either of these values are null, then this function is identical to
+#'        \code{ggplot2::facet_wrap()}.
 #'
 #' @return FacetWrap oject
 #'
